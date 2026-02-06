@@ -1,0 +1,6 @@
+[Unit]
+Description=Vorn Log Rotation
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/logrotate /etc/vorn/logrotate.conf

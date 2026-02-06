@@ -1,0 +1,8 @@
+# Policy for research-mode jobs (Apptainer with containment).
+name: "research"
+max_gpus: 2
+max_vram_mb: 49152      # 48 GB
+max_cpu_cores: 16
+max_walltime_sec: 86400 # 24 hours
+network_allowed: false
+mounts_allowed: false

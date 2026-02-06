@@ -1,0 +1,86 @@
+version: 1
+last_updated: "2025-06-01"
+
+drivers:
+  "545.23.08":
+    release_date: "2024-02-15"
+    cuda_max: "12.4"
+    supported_architectures:
+      - sm_50
+      - sm_52
+      - sm_60
+      - sm_61
+      - sm_70
+      - sm_72
+      - sm_75
+      - sm_80
+      - sm_86
+      - sm_89
+      - sm_90
+    eol: false
+
+  "535.183.06":
+    release_date: "2024-01-10"
+    cuda_max: "12.2"
+    supported_architectures:
+      - sm_50
+      - sm_52
+      - sm_60
+      - sm_61
+      - sm_70
+      - sm_72
+      - sm_75
+      - sm_80
+      - sm_86
+      - sm_89
+      - sm_90
+    eol: false
+
+cuda_toolkit:
+  "12.4":
+    min_driver: "545.23.06"
+    cudnn_versions: ["9.0.0", "9.1.0"]
+    frameworks:
+      pytorch: ["2.2.0", "2.3.0", "2.4.0"]
+      tensorflow: ["2.16.0"]
+      triton: ["2.1.0", "2.2.0"]
+      vllm: ["0.4.0", "0.5.0"]
+
+  "12.2":
+    min_driver: "535.54.03"
+    cudnn_versions: ["8.9.0", "9.0.0"]
+    frameworks:
+      pytorch: ["2.1.0", "2.2.0"]
+      tensorflow: ["2.15.0", "2.16.0"]
+
+gpu_models:
+  "NVIDIA A100 80GB":
+    architecture: sm_80
+    vram_mb: 81920
+    pcie_gen: 4
+    nvlink: true
+    mig_capable: true
+  "NVIDIA H100 80GB":
+    architecture: sm_90
+    vram_mb: 81920
+    pcie_gen: 5
+    nvlink: true
+    mig_capable: true
+  "NVIDIA RTX 4090":
+    architecture: sm_89
+    vram_mb: 24576
+    pcie_gen: 4
+    nvlink: false
+    mig_capable: false
+  "NVIDIA RTX 3090":
+    architecture: sm_86
+    vram_mb: 24576
+    pcie_gen: 4
+    nvlink: true
+    mig_capable: false
+  "NVIDIA L40":
+    architecture: sm_89
+    vram_mb: 49152
+    pcie_gen: 4
+    nvlink: false
+    mig_capable: false

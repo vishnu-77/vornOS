@@ -1,0 +1,31 @@
+[Unit]
+Description=Vorn GPU Health Monitor
+After=nvidia-persistenced.service
+Requires=nvidia-persistenced.service
+
+[Service]
+Type=simple
+ExecStart=/opt/vorn/bin/vorn-gpu-healthd --config /etc/vorn/vornd.yaml
+Restart=on-failure
+RestartSec=10s
+
+User=vorn
+Group=vorn
+SupplementaryGroups=video render
+
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/log/vorn
+RuntimeDirectory=vorn
+PrivateTmp=yes
+NoNewPrivileges=yes
+
+DeviceAllow=/dev/nvidia* r
+DeviceAllow=/dev/nvidiactl r
+
+StandardOutput=journal
+SyslogIdentifier=vorn-gpu-healthd
+LimitCORE=0
+
+[Install]
+WantedBy=multi-user.target

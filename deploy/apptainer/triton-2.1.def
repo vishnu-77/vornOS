@@ -1,0 +1,27 @@
+Bootstrap: docker
+From: nvcr.io/nvidia/tritonserver:24.04-py3
+
+%labels
+    maintainer Vorn OS
+    version 1.0
+    cuda_version 12.4
+    framework triton-2.1
+
+%post
+    apt-get update && apt-get install -y --no-install-recommends \
+        curl && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+%environment
+    export NVIDIA_VISIBLE_DEVICES=all
+    export NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+%runscript
+    exec tritonserver "$@"
+
+%startscript
+    tritonserver \
+        --model-repository=/workspace/input \
+        --http-port=8000 \
+        --grpc-port=8001 \
+        --metrics-port=8002

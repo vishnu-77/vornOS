@@ -1,0 +1,131 @@
+groups:
+  - name: vorn_gpu
+    rules:
+      - alert: GPUTemperatureCritical
+        expr: vorn_gpu_temperature_celsius > 90
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "GPU {{ $labels.gpu_index }} temperature critical ({{ $value }}°C)"
+          description: "GPU has exceeded 90°C for more than 1 minute. Thermal throttling or shutdown imminent."
+
+      - alert: GPUTemperatureWarning
+        expr: vorn_gpu_temperature_celsius > 83
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "GPU {{ $labels.gpu_index }} temperature elevated ({{ $value }}°C)"
+          description: "GPU has exceeded 83°C for more than 5 minutes."
+
+      - alert: GPUMemoryExhausted
+        expr: (vorn_gpu_memory_used_mb / vorn_gpu_memory_total_mb) > 0.95
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "GPU {{ $labels.gpu_index }} VRAM >95% ({{ $value | humanizePercentage }})"
+
+      - alert: GPUECCErrors
+        expr: rate(vorn_gpu_ecc_errors_total{type="uncorrectable"}[5m]) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "GPU {{ $labels.gpu_index }} uncorrectable ECC errors detected"
+          description: "Uncorrectable memory errors indicate potential hardware failure."
+
+      - alert: GPUECCErrorsWarning
+        expr: vorn_gpu_ecc_errors_total{type="correctable"} > 100
+        labels:
+          severity: warning
+        annotations:
+          summary: "GPU {{ $labels.gpu_index }} has {{ $value }} correctable ECC errors"
+
+      - alert: GPUHealthDegraded
+        expr: vorn_gpu_health_state != 0
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "GPU {{ $labels.gpu_index }} health state: {{ $labels.state }}"
+
+  - name: vorn_jobs
+    rules:
+      - alert: JobFailureRateHigh
+        expr: rate(vorn_jobs_total{status="failed"}[15m]) / rate(vorn_jobs_total[15m]) > 0.3
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Job failure rate >30% over 15m ({{ $value | humanizePercentage }})"
+
+      - alert: JobStuck
+        expr: vorn_jobs_active > 0 and changes(vorn_jobs_active[30m]) == 0
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Active jobs count unchanged for 30 minutes — possible stuck job"
+
+      - alert: NoJobsRunning
+        expr: vorn_jobs_active == 0 and vorn_scheduler_vram_allocated_mb > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "VRAM allocated but no active jobs — possible resource leak"
+
+  - name: vorn_models
+    rules:
+      - alert: ModelVerificationFailure
+        expr: rate(vorn_model_failures_total[5m]) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "Model verification failures detected for {{ $labels.model_id }}"
+          description: "Model signature verification is failing. Possible tampering or key mismatch."
+
+  - name: vorn_daemon
+    rules:
+      - alert: VorndDown
+        expr: up{job="vornd"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "vornd daemon is down"
+
+      - alert: VorndHighLatency
+        expr: histogram_quantile(0.99, rate(vorn_api_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API p99 latency >2s ({{ $value }}s)"
+
+      - alert: VorndHighErrorRate
+        expr: rate(vorn_api_requests_total{code=~"5.."}[5m]) / rate(vorn_api_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API error rate >5% ({{ $value | humanizePercentage }})"
+
+  - name: vorn_security
+    rules:
+      - alert: SecurityAuditEventBurst
+        expr: rate(vorn_audit_events_total{level="error"}[5m]) > 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High rate of security audit error events"
+
+      - alert: UnauthorizedAccessAttempt
+        expr: rate(vorn_api_requests_total{code="401"}[5m]) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Elevated unauthorized access attempts ({{ $value }}/s)"

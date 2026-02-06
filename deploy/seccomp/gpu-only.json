@@ -1,0 +1,54 @@
+{
+  "defaultAction": "SCMP_ACT_ERRNO",
+  "defaultErrnoRet": 1,
+  "archMap": [
+    {
+      "architecture": "SCMP_ARCH_X86_64",
+      "subArchitectures": ["SCMP_ARCH_X86", "SCMP_ARCH_X32"]
+    }
+  ],
+  "syscalls": [
+    {
+      "comment": "Core syscalls for GPU-only workloads. No network (socket/connect/send/recv blocked).",
+      "names": [
+        "access", "arch_prctl", "brk", "clock_getres", "clock_gettime",
+        "clock_nanosleep", "clone", "clone3", "close", "dup", "dup2", "dup3",
+        "epoll_create", "epoll_create1", "epoll_ctl", "epoll_pwait",
+        "eventfd", "eventfd2", "execve", "exit", "exit_group",
+        "faccessat", "faccessat2", "fadvise64", "fallocate", "fchdir",
+        "fcntl", "fdatasync", "flock", "fork", "fstat", "fstatfs",
+        "fsync", "ftruncate", "futex", "getcwd", "getdents", "getdents64",
+        "getegid", "geteuid", "getgid", "getpid", "getppid", "gettid",
+        "gettimeofday", "getuid", "getrandom", "getrlimit", "getrusage",
+        "ioctl", "kill", "lseek", "lstat", "madvise", "membarrier",
+        "memfd_create", "mincore", "mkdir", "mkdirat", "mlock", "mlock2",
+        "mmap", "mprotect", "mremap", "msync", "munlock", "munmap",
+        "nanosleep", "newfstatat", "open", "openat", "openat2", "pause",
+        "pipe", "pipe2", "poll", "ppoll", "prctl", "pread64", "preadv",
+        "prlimit64", "pwrite64", "pwritev", "read", "readlink",
+        "readlinkat", "readv", "rename", "renameat", "renameat2",
+        "restart_syscall", "rmdir", "rseq", "rt_sigaction", "rt_sigprocmask",
+        "rt_sigreturn", "sched_getaffinity", "sched_yield", "seccomp",
+        "select", "set_robust_list", "set_tid_address", "setpgid",
+        "sigaltstack", "stat", "statfs", "statx", "symlink", "sync",
+        "sysinfo", "tgkill", "time", "timer_create", "timer_delete",
+        "timer_gettime", "timer_settime", "tkill", "truncate", "umask",
+        "uname", "unlink", "unlinkat", "utime", "utimensat", "vfork",
+        "wait4", "waitid", "write", "writev"
+      ],
+      "action": "SCMP_ACT_ALLOW"
+    },
+    {
+      "comment": "Allow only AF_UNIX sockets (no network)",
+      "names": ["socket"],
+      "action": "SCMP_ACT_ALLOW",
+      "args": [
+        {
+          "index": 0,
+          "value": 1,
+          "op": "SCMP_CMP_EQ"
+        }
+      ]
+    }
+  ]
+}

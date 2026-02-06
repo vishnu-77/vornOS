@@ -1,0 +1,40 @@
+# Vorn Runtime Manager daemon configuration
+# Place at /etc/vorn/vornd.yaml in production
+
+# ── Network ────────────────────────────────────────────
+api_addr: "127.0.0.1:9800"
+unix_socket: "/var/run/vorn/vornd.sock"
+metrics_addr: "0.0.0.0:9801"
+
+# ── TLS (optional; if set, all three are required) ─────
+# tls_cert: "/etc/vorn/tls/server.crt"
+# tls_key: "/etc/vorn/tls/server.key"
+# tls_ca: "/etc/vorn/tls/ca.crt"
+
+# ── Storage ────────────────────────────────────────────
+db_path: "/var/lib/vorn/db/vorn.db"
+runtime_dir: "/var/lib/vorn/runtimes"
+model_dir: "/var/lib/vorn/models"
+job_dir: "/var/lib/vorn/jobs"
+log_dir: "/var/log/vorn"
+
+# ── Trust and signing ──────────────────────────────────
+trust_public_key: "/etc/vorn/trust.pub"
+trust_dir: "/etc/vorn/trust.d"
+
+# ── Policies ───────────────────────────────────────────
+policy_dir: "/etc/vorn/policies"
+
+# ── GPU ────────────────────────────────────────────────
+gpu_driver_min_version: "535.0"
+gpu_compat_matrix: "/opt/vorn/lib/gpu-compat/matrix.yaml"
+gpu_health_poll_sec: 5
+
+# ── Isolation ──────────────────────────────────────────
+default_isolation: "appliance"  # appliance | research | secure
+
+# ── Logging ────────────────────────────────────────────
+log_level: "info"  # debug | info | warn | error
+
+# ── Watchdog ───────────────────────────────────────────
+watchdog_sec: 30  # 0 to disable

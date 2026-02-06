@@ -1,0 +1,41 @@
+#!/usr/sbin/nft -f
+# Vorn OS firewall rules
+# Loaded by vorn-firewall.service at boot
+
+flush ruleset
+
+table inet vorn_filter {
+    chain input {
+        type filter hook input priority 0; policy drop;
+
+        # Loopback always allowed
+        iif lo accept
+
+        # Established/related connections
+        ct state established,related accept
+
+        # SSH
+        tcp dport 22 accept
+
+        # Vorn API (gRPC) — restrict to trusted networks
+        tcp dport 9800 ip saddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } accept
+
+        # Vorn Metrics (Prometheus scrape) — restrict to trusted networks
+        tcp dport 9801 ip saddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } accept
+
+        # ICMP (health checks)
+        icmp type echo-request accept
+        icmpv6 type echo-request accept
+
+        # Log and drop everything else
+        log prefix "vorn-drop: " drop
+    }
+
+    chain forward {
+        type filter hook forward priority 0; policy drop;
+    }
+
+    chain output {
+        type filter hook output priority 0; policy accept;
+    }
+}

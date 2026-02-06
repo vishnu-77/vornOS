@@ -1,0 +1,264 @@
+syntax = "proto3";
+
+package vorn.v1;
+
+option go_package = "github.com/vornos/buildos/pkg/api/proto;vornpb";
+
+import "google/protobuf/timestamp.proto";
+
+// ── Service ───────────────────────────────────────────
+
+service VornService {
+  // Status
+  rpc GetStatus(StatusRequest) returns (StatusResponse);
+  rpc GetHealth(HealthRequest) returns (HealthResponse);
+
+  // GPU
+  rpc GetGPUInventory(GPUInventoryRequest) returns (GPUInventoryResponse);
+
+  // Runtimes
+  rpc RegisterRuntime(RegisterRuntimeRequest) returns (RegisterRuntimeResponse);
+  rpc ListRuntimes(ListRuntimesRequest) returns (ListRuntimesResponse);
+  rpc InspectRuntime(InspectRuntimeRequest) returns (InspectRuntimeResponse);
+  rpc RemoveRuntime(RemoveRuntimeRequest) returns (RemoveRuntimeResponse);
+
+  // Models
+  rpc AddModel(stream AddModelChunk) returns (AddModelResponse);
+  rpc ListModels(ListModelsRequest) returns (ListModelsResponse);
+  rpc VerifyModel(VerifyModelRequest) returns (VerifyModelResponse);
+  rpc RemoveModel(RemoveModelRequest) returns (RemoveModelResponse);
+
+  // Jobs
+  rpc SubmitJob(SubmitJobRequest) returns (SubmitJobResponse);
+  rpc ListJobs(ListJobsRequest) returns (ListJobsResponse);
+  rpc GetJob(GetJobRequest) returns (GetJobResponse);
+  rpc StreamJobLogs(StreamJobLogsRequest) returns (stream LogEntry);
+  rpc KillJob(KillJobRequest) returns (KillJobResponse);
+}
+
+// ── Status ────────────────────────────────────────────
+
+message StatusRequest {}
+
+message StatusResponse {
+  string version = 1;
+  int64 uptime_seconds = 2;
+  int32 gpu_count = 3;
+  int32 active_jobs = 4;
+  int32 pending_jobs = 5;
+  int32 registered_runtimes = 6;
+  int32 stored_models = 7;
+  bool model_store_unlocked = 8;
+}
+
+message HealthRequest {}
+
+message HealthResponse {
+  string status = 1;  // healthy | degraded | unhealthy
+  bool db_responsive = 2;
+  bool gpu_available = 3;
+  bool model_store_unlocked = 4;
+  google.protobuf.Timestamp last_gpu_refresh = 5;
+}
+
+// ── GPU ───────────────────────────────────────────────
+
+message GPUInventoryRequest {}
+
+message GPUInventoryResponse {
+  repeated GPUDevice devices = 1;
+  google.protobuf.Timestamp timestamp = 2;
+}
+
+message GPUDevice {
+  int32 index = 1;
+  string uuid = 2;
+  string name = 3;
+  string driver_version = 4;
+  string cuda_version = 5;
+  int64 total_vram_mb = 6;
+  int64 used_vram_mb = 7;
+  int64 free_vram_mb = 8;
+  int32 temperature_c = 9;
+  int32 utilization_pct = 10;
+  string architecture = 11;
+  string health_state = 12;  // healthy | degraded | failed
+}
+
+// ── Runtimes ──────────────────────────────────────────
+
+message RegisterRuntimeRequest {
+  string name = 1;
+  string version = 2;
+  string image_ref = 3;       // path or OCI reference
+  string image_format = 4;    // sif | oci
+  string cuda_version = 5;
+  string cudnn_version = 6;
+  repeated string frameworks = 7;
+  repeated string architectures = 8;
+  string driver_min = 9;
+}
+
+message RegisterRuntimeResponse {
+  string id = 1;
+  string sha256 = 2;
+}
+
+message ListRuntimesRequest {}
+
+message ListRuntimesResponse {
+  repeated RuntimeInfo runtimes = 1;
+}
+
+message RuntimeInfo {
+  string id = 1;
+  string name = 2;
+  string version = 3;
+  string image_format = 4;
+  string cuda_version = 5;
+  repeated string frameworks = 6;
+  repeated string architectures = 7;
+  string sha256 = 8;
+  bool validated = 9;
+  google.protobuf.Timestamp registered_at = 10;
+}
+
+message InspectRuntimeRequest {
+  string id = 1;
+}
+
+message InspectRuntimeResponse {
+  RuntimeInfo runtime = 1;
+  string image_ref = 2;
+  string cudnn_version = 3;
+  string driver_min = 4;
+}
+
+message RemoveRuntimeRequest {
+  string id = 1;
+}
+
+message RemoveRuntimeResponse {}
+
+// ── Models ────────────────────────────────────────────
+
+message AddModelChunk {
+  // First chunk must include metadata; subsequent chunks are raw bytes.
+  ModelMetadata metadata = 1;  // set only on first chunk
+  bytes data = 2;
+  bytes signature = 3;         // set only on last chunk
+}
+
+message ModelMetadata {
+  string name = 1;
+  string version = 2;
+  string format = 3;  // onnx | safetensors | torchscript
+}
+
+message AddModelResponse {
+  string id = 1;
+  string sha256 = 2;
+  int64 size_bytes = 3;
+  bool encrypted = 4;
+}
+
+message ListModelsRequest {}
+
+message ListModelsResponse {
+  repeated ModelInfo models = 1;
+}
+
+message ModelInfo {
+  string id = 1;
+  string name = 2;
+  string version = 3;
+  string format = 4;
+  string sha256 = 5;
+  int64 size_bytes = 6;
+  bool encrypted = 7;
+  bool verified = 8;
+  google.protobuf.Timestamp imported_at = 9;
+}
+
+message VerifyModelRequest {
+  string id = 1;
+}
+
+message VerifyModelResponse {
+  bool valid = 1;
+  string signing_key = 2;  // which key verified (filename)
+  string error = 3;
+}
+
+message RemoveModelRequest {
+  string id = 1;
+}
+
+message RemoveModelResponse {}
+
+// ── Jobs ──────────────────────────────────────────────
+
+message SubmitJobRequest {
+  string model_id = 1;
+  string runtime_id = 2;
+  string mode = 3;           // appliance | research | secure
+  int32 gpu_limit = 4;
+  int64 vram_limit_mb = 5;
+  int32 cpu_limit = 6;
+  repeated string command = 7;  // override entrypoint
+  map<string, string> env = 8;
+}
+
+message SubmitJobResponse {
+  string job_id = 1;
+}
+
+message ListJobsRequest {
+  string status_filter = 1;  // empty = all
+  int32 limit = 2;           // 0 = no limit
+}
+
+message ListJobsResponse {
+  repeated JobInfo jobs = 1;
+}
+
+message JobInfo {
+  string id = 1;
+  string model_id = 2;
+  string runtime_id = 3;
+  string mode = 4;
+  int32 gpu_limit = 5;
+  int64 vram_limit_mb = 6;
+  string status = 7;
+  int32 exit_code = 8;
+  string error = 9;
+  google.protobuf.Timestamp submitted_at = 10;
+  google.protobuf.Timestamp started_at = 11;
+  google.protobuf.Timestamp finished_at = 12;
+}
+
+message GetJobRequest {
+  string id = 1;
+}
+
+message GetJobResponse {
+  JobInfo job = 1;
+}
+
+message StreamJobLogsRequest {
+  string job_id = 1;
+  bool follow = 2;      // tail -f behavior
+  string stream = 3;    // stdout | stderr | all (default: all)
+}
+
+message LogEntry {
+  google.protobuf.Timestamp timestamp = 1;
+  string stream = 2;  // stdout | stderr
+  string line = 3;
+}
+
+message KillJobRequest {
+  string job_id = 1;
+}
+
+message KillJobResponse {}

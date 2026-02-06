@@ -1,0 +1,8 @@
+# Policy for secure-mode jobs (Kata VM with VFIO).
+name: "secure"
+max_gpus: 1
+max_vram_mb: 24576      # 24 GB
+max_cpu_cores: 8
+max_walltime_sec: 3600  # 1 hour
+network_allowed: false
+mounts_allowed: false

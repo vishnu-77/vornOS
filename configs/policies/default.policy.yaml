@@ -1,0 +1,8 @@
+# Default policy for appliance-mode jobs.
+name: "appliance"
+max_gpus: 4
+max_vram_mb: 0          # 0 = no limit
+max_cpu_cores: 0        # 0 = no limit
+max_walltime_sec: 0     # 0 = no limit
+network_allowed: true
+mounts_allowed: true

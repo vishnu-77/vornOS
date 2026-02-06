@@ -1,0 +1,26 @@
+Bootstrap: docker
+From: nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
+
+%labels
+    maintainer Vorn OS
+    version 1.0
+    cuda_version 12.4
+    cudnn_version 9
+    framework vllm-0.4
+
+%post
+    apt-get update && apt-get install -y --no-install-recommends \
+        python3 python3-pip git && \
+    pip3 install --no-cache-dir \
+        vllm==0.4.* \
+        ray \
+        fschat && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+%environment
+    export NVIDIA_VISIBLE_DEVICES=all
+    export NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    export VLLM_WORKER_MULTIPROC_METHOD=spawn
+
+%runscript
+    exec python3 -m vllm.entrypoints.openai.api_server "$@"

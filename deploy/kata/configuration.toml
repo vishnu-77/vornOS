@@ -1,0 +1,19 @@
+# Kata Containers configuration stub for Vorn OS secure mode.
+# This file is a starting point — adjust paths and resource limits
+# to match your hardware and security requirements.
+
+[hypervisor.qemu]
+path = "/usr/bin/qemu-system-x86_64"
+kernel = "/usr/share/kata-containers/vmlinuz.container"
+image = "/usr/share/kata-containers/kata-containers.img"
+default_memory = 2048
+default_vcpus = 2
+
+# GPU passthrough (VFIO)
+# Requires IOMMU enabled and GPU bound to vfio-pci driver.
+# hotplug_vfio_on_root_bus = true
+# pcie_root_port = 1
+
+[runtime]
+enable_debug = false
+internetworking_model = "tcfilter"

@@ -1,0 +1,50 @@
+[Unit]
+Description=Vorn Runtime Manager Daemon
+Documentation=https://github.com/vornos/buildos
+After=network-online.target nvidia-persistenced.service vorn-model-unlocker.service vorn-gpu-healthd.service
+Wants=network-online.target vorn-gpu-healthd.service
+Requires=nvidia-persistenced.service
+
+[Service]
+Type=notify
+ExecStart=/opt/vorn/bin/vornd --config /etc/vorn/vornd.yaml
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5s
+WatchdogSec=30s
+
+User=vorn
+Group=vorn
+SupplementaryGroups=video render
+
+# Filesystem
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/vorn /var/log/vorn
+RuntimeDirectory=vorn
+RuntimeDirectoryMode=0750
+PrivateTmp=yes
+
+# Capabilities
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE CAP_SYS_PTRACE
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+# Device access (GPUs)
+DeviceAllow=/dev/nvidia* rw
+DeviceAllow=/dev/nvidiactl rw
+DeviceAllow=/dev/nvidia-uvm rw
+DeviceAllow=/dev/nvidia-uvm-tools rw
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=vornd
+
+# Resource limits
+LimitNOFILE=65536
+LimitMEMLOCK=infinity
+LimitCORE=0
+
+[Install]
+WantedBy=multi-user.target

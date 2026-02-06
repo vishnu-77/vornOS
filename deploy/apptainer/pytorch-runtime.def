@@ -1,0 +1,25 @@
+Bootstrap: docker
+From: nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
+
+%labels
+    maintainer Vorn OS
+    version 1.0
+    cuda_version 12.4
+    cudnn_version 9
+    framework pytorch-2.2
+
+%post
+    apt-get update && apt-get install -y --no-install-recommends \
+        python3 python3-pip && \
+    pip3 install --no-cache-dir \
+        torch==2.2.0 \
+        torchvision==0.17.0 \
+        onnxruntime-gpu && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+%environment
+    export NVIDIA_VISIBLE_DEVICES=all
+    export NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+%runscript
+    exec python3 "$@"

@@ -1,0 +1,20 @@
+[Unit]
+Description=Vorn Model Store Key Unsealer
+After=local-fs.target
+Before=vornd.service
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/opt/vorn/bin/vorn-model-unlocker --key /var/lib/vorn/encrypt/model-store.key.enc
+RemainAfterExit=yes
+
+User=root
+Group=root
+
+ProtectSystem=strict
+ReadWritePaths=/run/vorn
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

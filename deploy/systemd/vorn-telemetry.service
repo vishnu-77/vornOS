@@ -1,0 +1,15 @@
+[Unit]
+Description=Vorn Telemetry Exporter
+Documentation=https://github.com/vornos/buildos
+After=vornd.service
+BindsTo=vornd.service
+
+[Service]
+Type=simple
+# Telemetry is built into vornd on :9801; this unit is a placeholder
+# for a future standalone exporter if we split it out.
+ExecStart=/bin/true
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

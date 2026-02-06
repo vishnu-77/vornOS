@@ -1,0 +1,37 @@
+#cloud-config
+autoinstall:
+  version: 1
+  locale: en_US.UTF-8
+  keyboard:
+    layout: us
+
+  storage:
+    layout:
+      name: lvm
+      sizing-policy: scaled
+      match:
+        ssd: true
+
+  identity:
+    hostname: vornos
+    username: vorn
+    password: "$6$rounds=4096$vornos$CHANGE_THIS_HASH"
+
+  ssh:
+    install-server: true
+    allow-pw: false
+
+  packages:
+    - linux-headers-generic
+    - build-essential
+    - apparmor
+    - apparmor-utils
+    - nftables
+    - jq
+    - tpm2-tools
+    - logrotate
+    - numactl
+    - pciutils
+
+  late-commands:
+    - curtin in-target -- systemctl disable unattended-upgrades.service

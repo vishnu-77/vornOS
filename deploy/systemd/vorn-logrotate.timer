@@ -1,0 +1,9 @@
+[Unit]
+Description=Vorn Log Rotation Timer
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+
+[Install]
+WantedBy=timers.target

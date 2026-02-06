@@ -1,0 +1,14 @@
+[Unit]
+Description=Vorn OS Firewall Rules
+After=network-pre.target
+Before=network.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/nft -f /etc/vorn/firewall.rules
+ExecReload=/usr/sbin/nft -f /etc/vorn/firewall.rules
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

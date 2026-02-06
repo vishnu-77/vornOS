@@ -1,0 +1,25 @@
+Bootstrap: docker
+From: nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
+
+%labels
+    maintainer Vorn OS
+    version 1.0
+    cuda_version 12.4
+    cudnn_version 9
+    framework tensorflow-2.16
+
+%post
+    apt-get update && apt-get install -y --no-install-recommends \
+        python3 python3-pip && \
+    pip3 install --no-cache-dir \
+        tensorflow[and-cuda]==2.16.* \
+        keras==3.* && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+%environment
+    export NVIDIA_VISIBLE_DEVICES=all
+    export NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    export TF_CPP_MIN_LOG_LEVEL=2
+
+%runscript
+    exec python3 "$@"

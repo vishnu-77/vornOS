@@ -1,0 +1,32 @@
+#include <tunables/global>
+
+# AppArmor profile for Vorn secure-mode (Kata) jobs.
+# Strictly read-only model access; no direct GPU device access (VFIO passthrough).
+
+profile vorn-job-secure flags=(attach_disconnected) {
+  #include <abstractions/base>
+
+  # Model access: strictly read-only
+  /var/lib/vorn/jobs/*/workspace/input/** r,
+
+  # Output directory: write-only
+  /var/lib/vorn/jobs/*/workspace/output/** rw,
+
+  # No direct GPU device access (GPU is passed through via VFIO to the VM)
+  deny /dev/nvidia* rw,
+  deny /dev/nvidiactl rw,
+
+  # Deny all dangerous operations
+  deny network,
+  deny mount,
+  deny ptrace,
+  deny signal,
+
+  # Deny sensitive system paths
+  deny /etc/shadow r,
+  deny /etc/vorn/** r,
+  deny /var/lib/vorn/encrypt/** r,
+  deny /var/lib/vorn/db/** rw,
+  deny /proc/*/mem r,
+  deny /sys/** w,
+}

@@ -1,0 +1,30 @@
+# Binaries
+bin/
+vornd
+vornctl
+*.exe
+
+# Go
+vendor/
+go.sum
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Vorn data (local dev)
+/data/
+/models/
+*.key
+*.pem
+
+# Build artifacts
+*.iso
+*.qcow2
+*.ova

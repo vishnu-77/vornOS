@@ -1,0 +1,48 @@
+#include <tunables/global>
+
+# AppArmor profile for Vorn research-mode job containers.
+# Allows GPU access and job workspace; denies network and sensitive paths.
+
+profile vorn-job-default flags=(attach_disconnected) {
+  #include <abstractions/base>
+
+  # GPU device access
+  /dev/nvidia* rw,
+  /dev/nvidiactl rw,
+  /dev/nvidia-uvm rw,
+  /dev/nvidia-uvm-tools rw,
+
+  # NVIDIA libraries
+  /usr/lib/x86_64-linux-gnu/libnvidia* mr,
+  /usr/lib/x86_64-linux-gnu/libcuda* mr,
+  /usr/lib/x86_64-linux-gnu/libnvcuvid* mr,
+
+  # Job workspace (read-write)
+  /var/lib/vorn/jobs/*/workspace/** rw,
+
+  # Model access (read-only)
+  /var/lib/vorn/jobs/*/workspace/input/** r,
+
+  # Temp directories
+  /tmp/** rw,
+
+  # Python / framework dependencies (common paths)
+  /usr/lib/python3/** r,
+  /usr/local/lib/python3/** r,
+  /usr/local/lib/python3/**/site-packages/** r,
+
+  # Proc/sys for GPU queries
+  /proc/driver/nvidia/** r,
+  /proc/sys/vm/mmap_min_addr r,
+  /sys/bus/pci/devices/** r,
+
+  # Deny sensitive paths
+  deny /etc/shadow r,
+  deny /etc/vorn/tls/** r,
+  deny /var/lib/vorn/encrypt/** r,
+  deny /var/lib/vorn/db/** rw,
+  deny /proc/*/mem r,
+
+  # Deny network by default
+  deny network,
+}
